@@ -232,7 +232,6 @@ def excluir_cliente():
     # Remove a linha da tree view
     tree.delete(tree.selection())
 
-
 def editar():
     selected_item = tree.selection()
     for item in selected_item:
@@ -243,54 +242,45 @@ def editar():
         quantidade = tree.item(item, 'values')[3]
         num_ordem = tree.item(item, 'values')[4]
 
-    # Atualize as informações na linha correspondente
-    fornecedor_entry.delete(0, END)
-    fornecedor_entry.insert(0, fornecedor)
-    medicamento_entry.delete(0, END)
-    medicamento_entry.insert(0, medicamento)
-    marca_entry.delete(0, END)
-    marca_entry.insert(0, marca)
-    quantidade_entry.delete(0, END)
-    quantidade_entry.insert(0, quantidade)
-    num_ordem_entry.delete(0, END)
-    num_ordem_entry.insert(0, num_ordem)
+        # Atualize as informações nos campos de entrada correspondentes
+        fornecedor_entry.delete(0, tk.END)
+        fornecedor_entry.insert(0, fornecedor)
+        medicamento_entry.delete(0, tk.END)
+        medicamento_entry.insert(0, medicamento)
+        marca_entry.delete(0, tk.END)
+        marca_entry.insert(0, marca)
+        quantidade_entry.delete(0, tk.END)
+        quantidade_entry.insert(0, quantidade)
+        num_ordem_entry.delete(0, tk.END)
+        num_ordem_entry.insert(0, num_ordem)
     
-def on_editar_clicked():
-    # Obter o modelo da treeview
-    linha_selecionada = treeview.selection()[0]
-    # Obtém os valores da linha selecionada
-    valores_antigos = treeview.item(linha_selecionada)['values']
-# Insere os valores nos campos de entrada
-    fornecedor.delete(0, tk.END)
-    fornecedor.insert(0, valores_antigos[0])
-    medicamento.delete(0, tk.END)
-    medicamento.insert(0, valores_antigos[1])
-    marca.delete(0, tk.END)
-    marca.insert(0, valores_antigos[2])
-    quantidade.delete(0, tk.END)
-    quantidade.insert(0, valores_antigos[3])
-    num_ordem.delete(0, tk.END)
-    num_ordem.insert(0, valores_antigos[4])
+def salvar():
+    # Obtém a linha selecionada
+    linha_selecionada = tree.selection()[0]
+    
+    # Obtém os valores antigos da linha selecionada
+    valores_antigos = tree.item(linha_selecionada)['values']
 
-    # Aguarda o usuário editar os campos de entrada e clicar em "Salvar"
-    botao_editar.config(command=lambda: salvar_dados(
-        linha_selecionada, valores_antigos))
-
-
-def salvar_dados(linha_selecionada, valores_antigos):
     # Obtém os novos valores dos campos de entrada
-    fornecedor = fornecedor.get()
-    medicamento = medicamento.get()
-    marca = marca.get()
-    num_ordem = num_ordem.get()
-    quantidade = quantidade.get()
+    fornecedor_novo = fornecedor_entry.get()
+    medicamento_novo = medicamento_entry.get()
+    marca_nova = marca_entry.get()
+    num_ordem_novo = num_ordem_entry.get()
+    quantidade_nova = quantidade_entry.get()
 
-        # Atualiza os valores na linha do Treeview
-    treeview.item(linha_selecionada, values=(fornecedor, medicamento, marca, quantidade, num_ordem))
-    
+    # Atualiza os valores na linha do Treeview
+    tree.set(linha_selecionada, column=0, value=fornecedor_novo)
+    tree.set(linha_selecionada, column=1, value=medicamento_novo)
+    tree.set(linha_selecionada, column=2, value=marca_nova)
+    tree.set(linha_selecionada, column=3, value=quantidade_nova)
+    tree.set(linha_selecionada, column=4, value=num_ordem_novo)
 
-editar = ttk.Button(root, text='Editar', command=editar)
-editar.place(relx=0.8, rely=0.59, width=40, height=40)
+editar_button = ttk.Button(root, text='Editar', command=editar)
+editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
+
+salvar_button = ttk.Button(root, text='Salvar', command=salvar)
+salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
+salvar_button.config(command=salvar)
 
 # Adiciona o botão de exclusão
 excluir = tk.PhotoImage(file='imagens\excluir.png').subsample(3, 3)
