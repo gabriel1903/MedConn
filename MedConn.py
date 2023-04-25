@@ -13,7 +13,7 @@ import textwrap
 from tkinter import *
 
 root = tk.Tk()
-root.title("Cadastro de Medicamentos")
+root.title("MedConn")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
@@ -28,6 +28,12 @@ altura = 700
 root.geometry("%dx%d" % (largura, altura))
 fonte_padrao = ("Arial", 11)
 root.state('zoomed')
+
+# vamos criar um objeto da classe PhotoImage para
+# carregar o ícone
+icone = PhotoImage(file='imagens\icone_MedConn.png')
+# agora definimos o ícone para a janela
+root.iconphoto(True, icone)
 
 # Configura a fonte para todos os widgets da aplicação
 root.option_add("*Font", fonte_padrao)
@@ -132,8 +138,9 @@ for row in rows:
     if None in row:
         # Se houver, substitui por uma string vazia
         row = ["" if val is None else val for val in row]
-    tree.insert('', 'end', values=row, tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar'))
-  
+    tree.insert('', 'end', values=row, tags=('linha_par' if len(
+        tree.get_children()) % 2 == 0 else 'linha_impar'))
+
 
 # communicate back to the scrollbar
 tree['yscrollcommand'] = scrollbar.set
@@ -158,7 +165,8 @@ def inserir():
 
     if fornecedor and medicamento:
         # insere os dados na tabela
-        tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem), tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
+        tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem), tags=(
+            'linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
         error_label.config(text=error_message, fg=root.cget('bg'))
     else:
         error_label.config(text=error_message, fg='red',
@@ -182,6 +190,7 @@ check = tk.PhotoImage(file='imagens\checkredimensionado.png').subsample(5, 5)
 inserir_button = ttk.Button(
     root, text='Inserir', command=inserir, image=check, compound=RIGHT)
 inserir_button.place(relx=0.02, rely=0.31, width=150, height=30)
+
 
 def save_item(self):
     fornecedor = self.fornecedor_entry.get()
@@ -212,20 +221,81 @@ def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
     if len(tree.selection()) == 0:
         return
-    
     # Recupera o ID da linha selecionada
     fornecedor_selecionado = tree.item(tree.selection())['values'][0]
-    
+
     # Exclui a linha no banco de dados
-    c.execute("DELETE FROM database WHERE fornecedor=?", (fornecedor_selecionado,))
+    c.execute("DELETE FROM database WHERE fornecedor=?",
+              (fornecedor_selecionado,))
     conn.commit()
-    
+
     # Remove a linha da tree view
     tree.delete(tree.selection())
 
+
+def editar():
+    selected_item = tree.selection()
+    for item in selected_item:
+        # Obtenha as informações da linha selecionada
+        fornecedor = tree.item(item, 'values')[0]
+        medicamento = tree.item(item, 'values')[1]
+        marca = tree.item(item, 'values')[2]
+        quantidade = tree.item(item, 'values')[3]
+        num_ordem = tree.item(item, 'values')[4]
+
+    # Atualize as informações na linha correspondente
+    fornecedor_entry.delete(0, END)
+    fornecedor_entry.insert(0, fornecedor)
+    medicamento_entry.delete(0, END)
+    medicamento_entry.insert(0, medicamento)
+    marca_entry.delete(0, END)
+    marca_entry.insert(0, marca)
+    quantidade_entry.delete(0, END)
+    quantidade_entry.insert(0, quantidade)
+    num_ordem_entry.delete(0, END)
+    num_ordem_entry.insert(0, num_ordem)
+    
+def on_editar_clicked():
+    # Obter o modelo da treeview
+    linha_selecionada = treeview.selection()[0]
+    # Obtém os valores da linha selecionada
+    valores_antigos = treeview.item(linha_selecionada)['values']
+# Insere os valores nos campos de entrada
+    fornecedor.delete(0, tk.END)
+    fornecedor.insert(0, valores_antigos[0])
+    medicamento.delete(0, tk.END)
+    medicamento.insert(0, valores_antigos[1])
+    marca.delete(0, tk.END)
+    marca.insert(0, valores_antigos[2])
+    quantidade.delete(0, tk.END)
+    quantidade.insert(0, valores_antigos[3])
+    num_ordem.delete(0, tk.END)
+    num_ordem.insert(0, valores_antigos[4])
+
+    # Aguarda o usuário editar os campos de entrada e clicar em "Salvar"
+    botao_editar.config(command=lambda: salvar_dados(
+        linha_selecionada, valores_antigos))
+
+
+def salvar_dados(linha_selecionada, valores_antigos):
+    # Obtém os novos valores dos campos de entrada
+    fornecedor = fornecedor.get()
+    medicamento = medicamento.get()
+    marca = marca.get()
+    num_ordem = num_ordem.get()
+    quantidade = quantidade.get()
+
+        # Atualiza os valores na linha do Treeview
+    treeview.item(linha_selecionada, values=(fornecedor, medicamento, marca, quantidade, num_ordem))
+    
+
+editar = ttk.Button(root, text='Editar', command=editar)
+editar.place(relx=0.8, rely=0.59, width=40, height=40)
+
 # Adiciona o botão de exclusão
 excluir = tk.PhotoImage(file='imagens\excluir.png').subsample(3, 3)
-botao_excluir = ttk.Button(root, text='', command=inserir, image=excluir, compound=CENTER)
+botao_excluir = ttk.Button(
+    root, text='', command=inserir, image=excluir, compound=CENTER)
 botao_excluir.place(relx=0.954, rely=0.59, width=40, height=40)
 botao_excluir.config(command=excluir_cliente)
 
