@@ -208,14 +208,10 @@ def save_item(self):
     self.num_ordem_entry.delete(0, tk.END)
 
 
-combo_box = tk.StringVar(value="Selecione uma opção")
-combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
-combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
-combo_box_menu.place(relx=0.355, rely=0.78, width=250)
-
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=9, column=0, padx=7, pady=14)
+
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
@@ -231,6 +227,7 @@ def excluir_cliente():
 
     # Remove a linha da tree view
     tree.delete(tree.selection())
+
 
 def editar():
     selected_item = tree.selection()
@@ -253,11 +250,12 @@ def editar():
         quantidade_entry.insert(0, quantidade)
         num_ordem_entry.delete(0, tk.END)
         num_ordem_entry.insert(0, num_ordem)
-    
+
+
 def salvar():
     # Obtém a linha selecionada
     linha_selecionada = tree.selection()[0]
-    
+
     # Obtém os valores antigos da linha selecionada
     valores_antigos = tree.item(linha_selecionada)['values']
 
@@ -275,12 +273,23 @@ def salvar():
     tree.set(linha_selecionada, column=3, value=quantidade_nova)
     tree.set(linha_selecionada, column=4, value=num_ordem_novo)
 
-editar_button = ttk.Button(root, text='Editar', command=editar)
+    fornecedor_entry.delete(0, tk.END)
+    medicamento_entry.delete(0, tk.END)
+    marca_entry.delete(0, tk.END)
+    quantidade_entry.delete(0, tk.END)
+    num_ordem_entry.delete(0, tk.END)
+    desabilitar_botao_salvar()
+
+
+editar_button = ttk.Button(root, text='Editar', command=lambda: [
+                           editar(), habilitar_botao_salvar()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
-salvar_button = ttk.Button(root, text='Salvar', command=salvar)
+salvar_button = ttk.Button(
+    root, text='Salvar', command=salvar, state="disable")
 salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
+
 
 # Adiciona o botão de exclusão
 excluir = tk.PhotoImage(file='imagens\excluir.png').subsample(3, 3)
@@ -288,5 +297,19 @@ botao_excluir = ttk.Button(
     root, text='', command=inserir, image=excluir, compound=CENTER)
 botao_excluir.place(relx=0.954, rely=0.59, width=40, height=40)
 botao_excluir.config(command=excluir_cliente)
+
+combo_box = tk.StringVar(value="Selecione uma opção")
+combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
+combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
+combo_box_menu.place(relx=0.355, rely=0.78, width=250)
+
+
+def habilitar_botao_salvar():
+    salvar_button.config(state="normal")
+
+
+def desabilitar_botao_salvar():
+    salvar_button.config(state="disabled")
+
 
 root.mainloop()
