@@ -146,8 +146,6 @@ for row in rows:
 tree['yscrollcommand'] = scrollbar.set
 
 # função a ser chamada quando o botão "Inserir" for pressionado
-
-
 def inserir():
     # obter as informações do medicamento a partir das caixas de entrada de texto
     marca = marca_entry.get()
@@ -250,8 +248,8 @@ def editar():
         quantidade_entry.insert(0, quantidade)
         num_ordem_entry.delete(0, tk.END)
         num_ordem_entry.insert(0, num_ordem)
-
-
+    # Salve as alterações no banco de dados
+    
 def salvar():
     # Obtém a linha selecionada
     linha_selecionada = tree.selection()[0]
@@ -279,10 +277,14 @@ def salvar():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
     desabilitar_botao_salvar()
+    
+c.execute("UPDATE database SET fornecedor = ?, medicamento = ?, marca = ?, quantidade = ?, num_ordem = ?")
+
+conn.commit()
+    
 
 
-editar_button = ttk.Button(root, text='Editar', command=lambda: [
-                           editar(), habilitar_botao_salvar()])
+editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
 salvar_button = ttk.Button(
