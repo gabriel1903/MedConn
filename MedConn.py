@@ -3,7 +3,6 @@ from tkinter import ttk
 from urllib.request import urlopen
 import csv
 import pickle
-import os
 from PIL import Image
 from PIL import Image, ImageTk
 import glob
@@ -20,11 +19,12 @@ conn = sqlite3.connect('database.db')
 
 # Crie um cursor para a conexão
 c = conn.cursor()
-c.execute('''CREATE TABLE IF NOT EXISTS database (fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao TEXT,requisicao TEXT, ordem_de_compra TEXT, empenho TEXT, observacao TEXT)''')
+c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao TEXT,requisicao TEXT, ordem_de_compra TEXT, empenho TEXT, observacao TEXT)')
+
 
 # define a largura e altura da janela
-largura = 900
-altura = 700
+largura = root.winfo_screenwidth() * 0.8
+altura = root.winfo_screenheight() * 0.8
 root.geometry("%dx%d" % (largura, altura))
 fonte_padrao = ("Arial", 11)
 root.state('zoomed')
@@ -47,7 +47,7 @@ label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
 label_frame.grid(row=0, column=0, padx=33, pady=10)
 
 # Fazer a consulta no banco de dados
-c.execute('SELECT * FROM database')
+c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao FROM database')
 rows = c.fetchall()
 
 # Criando as caixas de entrada de texto dentro do LabelFrame
@@ -205,7 +205,6 @@ def save_item(self):
     self.quantidade_entry.delete(0, tk.END)
     self.num_ordem_entry.delete(0, tk.END)
 
-
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=9, column=0, padx=7, pady=14)
@@ -250,40 +249,39 @@ def editar():
         num_ordem_entry.insert(0, num_ordem)
     # Salve as alterações no banco de dados
     
+
 def salvar():
     # Obtém a linha selecionada
     linha_selecionada = tree.selection()[0]
 
     # Obtém os valores antigos da linha selecionada
-    valores_antigos = tree.item(linha_selecionada)['values']
-
+    valores = tree.item(linha_selecionada)['values']
+    id = valores[0]
+        
     # Obtém os novos valores dos campos de entrada
-    fornecedor_novo = fornecedor_entry.get()
-    medicamento_novo = medicamento_entry.get()
-    marca_nova = marca_entry.get()
-    num_ordem_novo = num_ordem_entry.get()
-    quantidade_nova = quantidade_entry.get()
+    fornecedor = fornecedor_entry.get()
+    medicamento = medicamento_entry.get()
+    marca = marca_entry.get()
+    num_ordem = num_ordem_entry.get()
+    quantidade = quantidade_entry.get()
 
     # Atualiza os valores na linha do Treeview
-    tree.set(linha_selecionada, column=0, value=fornecedor_novo)
-    tree.set(linha_selecionada, column=1, value=medicamento_novo)
-    tree.set(linha_selecionada, column=2, value=marca_nova)
-    tree.set(linha_selecionada, column=3, value=quantidade_nova)
-    tree.set(linha_selecionada, column=4, value=num_ordem_novo)
+    tree.set(linha_selecionada, column=0, value=fornecedor)
+    tree.set(linha_selecionada, column=1, value=medicamento)
+    tree.set(linha_selecionada, column=2, value=marca)
+    tree.set(linha_selecionada, column=3, value=quantidade)
+    tree.set(linha_selecionada, column=4, value=num_ordem)
+
+    c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?", (fornecedor, medicamento, marca, quantidade, num_ordem, id))
+    conn.commit()
 
     fornecedor_entry.delete(0, tk.END)
     medicamento_entry.delete(0, tk.END)
     marca_entry.delete(0, tk.END)
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
-    desabilitar_botao_salvar()
+    desabilitar_botao_salvar()    
     
-c.execute("UPDATE database SET fornecedor = ?, medicamento = ?, marca = ?, quantidade = ?, num_ordem = ?")
-
-conn.commit()
-    
-
-
 editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
