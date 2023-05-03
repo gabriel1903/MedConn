@@ -10,6 +10,7 @@ import os
 import sqlite3
 import textwrap
 from tkinter import *
+import time
 
 root = tk.Tk()
 root.title("MedConn")
@@ -20,7 +21,6 @@ conn = sqlite3.connect('database.db')
 # Crie um cursor para a conexão
 c = conn.cursor()
 c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao TEXT,requisicao TEXT, ordem_de_compra TEXT, empenho TEXT, observacao TEXT)')
-
 
 # define a largura e altura da janela
 largura = root.winfo_screenwidth() * 0.8
@@ -141,7 +141,6 @@ for row in rows:
     tree.insert('', 'end', values=row, tags=('linha_par' if len(
         tree.get_children()) % 2 == 0 else 'linha_impar'))
 
-
 # communicate back to the scrollbar
 tree['yscrollcommand'] = scrollbar.set
 
@@ -177,7 +176,6 @@ def inserir():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
 
-
 error_message = 'Fornecedor ou Medicamento não informado'
 error_label = tk.Label(text=error_message, fg=root.cget('bg'))
 error_label.place(relx=0.13, rely=0.289, width=290, height=30)
@@ -188,7 +186,6 @@ check = tk.PhotoImage(file='imagens\checkredimensionado.png').subsample(5, 5)
 inserir_button = ttk.Button(
     root, text='Inserir', command=inserir, image=check, compound=RIGHT)
 inserir_button.place(relx=0.02, rely=0.31, width=150, height=30)
-
 
 def save_item(self):
     fornecedor = self.fornecedor_entry.get()
@@ -209,7 +206,6 @@ def save_item(self):
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=9, column=0, padx=7, pady=14)
 
-
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
     if len(tree.selection()) == 0:
@@ -224,7 +220,6 @@ def excluir_cliente():
 
     # Remove a linha da tree view
     tree.delete(tree.selection())
-
 
 def editar():
     selected_item = tree.selection()
@@ -247,9 +242,9 @@ def editar():
         quantidade_entry.insert(0, quantidade)
         num_ordem_entry.delete(0, tk.END)
         num_ordem_entry.insert(0, num_ordem)
+        desabilitar_botao_salvar()
     # Salve as alterações no banco de dados
     
-
 def salvar():
     # Obtém a linha selecionada
     linha_selecionada = tree.selection()[0]
@@ -285,11 +280,11 @@ def salvar():
 editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
+salvar_button = ttk.Button(root, text='Salvar', command=salvar)
 salvar_button = ttk.Button(
     root, text='Salvar', command=salvar, state="disable")
 salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
-
 
 # Adiciona o botão de exclusão
 excluir = tk.PhotoImage(file='imagens\excluir.png').subsample(3, 3)
@@ -303,13 +298,15 @@ combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenh
 combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
 combo_box_menu.place(relx=0.355, rely=0.78, width=250)
 
-
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
 
-
 def desabilitar_botao_salvar():
     salvar_button.config(state="disabled")
+
+salvar_button = ttk.Button(root, text='Salvar', command=salvar, state="disable")
+salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
+salvar_button.config(command=salvar)
 
 
 root.mainloop()
