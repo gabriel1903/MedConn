@@ -176,6 +176,7 @@ def inserir():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
 
+
 error_message = 'Fornecedor ou Medicamento não informado'
 error_label = tk.Label(text=error_message, fg=root.cget('bg'))
 error_label.place(relx=0.13, rely=0.289, width=290, height=30)
@@ -293,11 +294,6 @@ botao_excluir = ttk.Button(
 botao_excluir.place(relx=0.954, rely=0.59, width=40, height=40)
 botao_excluir.config(command=excluir_cliente)
 
-combo_box = tk.StringVar(value="Selecione uma opção")
-combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
-combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
-combo_box_menu.place(relx=0.355, rely=0.78, width=250)
-
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
 
@@ -308,5 +304,24 @@ salvar_button = ttk.Button(root, text='Salvar', command=salvar, state="disable")
 salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
 
+
+
+def adicionar_imagem(event):
+    # Verifica se a opção selecionada é "solicitação"
+    if combo_box.get() == "solicitação":
+        # Abre a imagem
+        imagem = Image.open("imagens\check.png")
+        # Cria um objeto PhotoImage com a imagem
+        photo = ImageTk.PhotoImage(imagem)
+        # Obtém a linha selecionada no Treeview
+        linha = tree.focus()
+        # Adiciona a imagem na coluna "solicitação" da linha selecionada
+        tree.insert('', values=["", "", "", "", "", "", photo, "", "", ""])
+
+combo_box = tk.StringVar(value="Selecione uma opção")
+combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
+combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
+combo_box_menu.place(relx=0.355, rely=0.78, width=250)
+combo_box_menu.bind("<<ComboboxSelected>>", adicionar_imagem)
 
 root.mainloop()
