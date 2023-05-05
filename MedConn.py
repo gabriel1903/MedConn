@@ -11,6 +11,8 @@ import sqlite3
 import textwrap
 from tkinter import *
 import time
+from PIL import Image
+
 
 root = tk.Tk()
 root.title("MedConn")
@@ -168,6 +170,29 @@ def inserir():
     else:
         error_label.config(text=error_message, fg='red',
                            font=("TkDefaultFont", 11,))
+ 
+    if fornecedor and medicamento:
+        # insere os dados na tabela
+        cb_solicitacao = combo_box.get() == "Solicitação"
+        if cb_solicitacao:
+            # Cria a imagem "check"
+            imagem = ImageTk.PhotoImage(Image.open("check.png"))
+            # insere os dados na tabela, incluindo a imagem "check" na coluna "observacao"
+            tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem, imagem))
+        else:
+            tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem), tags=(
+                'linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar'))
+        error_label.config(text=error_message, fg=root.cget('bg'))
+    else:
+        error_label.config(text=error_message, fg='red',
+                           font=("TkDefaultFont", 11,))
+    
+    # Execute a consulta SQL para inserir os dados na tabela
+    c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
+              (fornecedor, medicamento, marca, quantidade, num_ordem))
+
+    # Salve as alterações no banco de dados
+    conn.commit()
 
     # limpar as caixas de entrada de texto
     fornecedor_entry.delete(0, tk.END)
@@ -323,5 +348,6 @@ combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenh
 combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
 combo_box_menu.place(relx=0.355, rely=0.78, width=250)
 combo_box_menu.bind("<<ComboboxSelected>>", adicionar_imagem)
+
 
 root.mainloop()
