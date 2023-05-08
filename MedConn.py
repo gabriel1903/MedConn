@@ -38,10 +38,6 @@ root.iconphoto(True, icone)
 root.option_add("*Font", fonte_padrao)
 
 # Definindo o estilo do LabelFrame
-style = ttk.Style()
-style.configure('My.TLabelframe', background='Transparent.TLabelframe', foreground='Transparent.TLabelframe',
-                borderwidth=90, relief='sunken', font=('Arial', 11), borderstyle='sunken')
-
 label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
 label_frame.grid(row=0, column=0, padx=33, pady=10)
 
@@ -79,8 +75,6 @@ num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
 columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
            'Solicitação', 'requisicao', 'ordem_de_compra', 'empenho', 'observacao')
 tree = ttk.Treeview(root, columns=columns, show='headings')
-style.configure('Treeview', rowheight=25, bordercolor='#000000',
-                borderwidth=1, separatorcolor='#000000')
 
 # define estilo para cabeçalho das colunas
 style = ttk.Style()
@@ -125,7 +119,7 @@ tree.tag_configure('linha_impar', background='#e6e3e3')
 
 for contact in contacts:
     tree.insert('', tk.END, values=contact)
-    tree.place(relx=0.02, rely=0.65, relwidth=0.959)
+    tree.pack(full='x', padx=5, pady=5)
 
 # create a scrollbar widget and set its command to the text widget
 scrollbar = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
@@ -219,12 +213,9 @@ def save_item(self):
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=9, column=0, padx=7, pady=14)
 
-
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
-    if len(tree.selection()) == 0:
-        return
-    # Recupera o ID da linha selecionada
+    
     fornecedor_selecionado = tree.item(tree.selection())['values'][0]
 
     # Exclui a linha no banco de dados
@@ -235,9 +226,7 @@ def excluir_cliente():
     # Remove a linha da tree view
     tree.delete(tree.selection())
 
-
 tree.bind('<Delete>', lambda event: excluir_cliente())
-
 
 def editar():
     selected_item = tree.selection()
@@ -262,7 +251,6 @@ def editar():
         num_ordem_entry.insert(0, num_ordem)
         desabilitar_botao_salvar()
     # Salve as alterações no banco de dados
-
 
 def salvar():
     # Obtém a linha selecionada
@@ -312,9 +300,8 @@ salvar_button.config(command=salvar)
 excluir = tk.PhotoImage(file='imagens/excluir.png').subsample(3, 3)
 botao_excluir = ttk.Button(
     root, text='', command=inserir, image=excluir, compound=CENTER)
-botao_excluir.place(relx=0.954, rely=0.59, width=40, height=40)
+botao_excluir.place(relx=0.9455, rely=0.59, width=40, height=40)
 botao_excluir.config(command=excluir_cliente)
-
 
 images = {
     'check': Image.open('imagens\check.png')
@@ -323,21 +310,44 @@ images = {
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
 
-
 def desabilitar_botao_salvar():
     salvar_button.config(state="disabled")
-
 
 # definindo a string da combobox
 combo_box = tk.StringVar(value="Selecione uma opção")
 combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
-combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
+combo_box_menu = ttk.OptionMenu(label_frame, combo_box, *combo_box_options)
 combo_box_menu.place(relx=0.355, rely=0.78, width=250)
-
 
 salvar_button = ttk.Button(
     root, text='Salvar', command=salvar, state="disable")
 salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
+
+def config_menu():
+    options_window = tk.Toplevel(root)
+    options_window.title("Configurações")
+    options_window.geometry("600x450")
+    
+    label1 = ttk.LabelFrame(options_window, text="Opção 1")
+    check1 = ttk.Checkbutton(label1)
+    check1.pack(side=tk.RIGHT)
+
+    label2 = ttk.LabelFrame(options_window, text="Opção 2")
+    check2 = ttk.Checkbutton(label2)
+    check2.pack(side=tk.RIGHT)
+
+    # Posiciona os labels na janela principal
+    label1.pack()
+    label2.pack()   
+
+
+config = tk.PhotoImage(file='imagens/config.png').subsample(17, 17)
+botao_config = ttk.Button(root, text='', image=config, compound=CENTER)
+botao_config.place(relx=0.9455, rely=0.02, width=40, height=40)
+botao_config.config(command=config_menu)
+
+
+
 
 root.mainloop()
