@@ -1,6 +1,7 @@
 ✔️ Consertar a linha adicionada duplicadamente ao reinicia o programa
-Acrecentar botão de editar
+Acrescentar botão de editar
 Implementar o indicativo da planilha com base na escolha na combobox
+Inserir autocompletar
 Campo de adicionar observações
 Opção de anexar PDF
 Opção de baixar o PDF

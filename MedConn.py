@@ -1,8 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-from urllib.request import urlopen
-import csv
-import pickle
 from PIL import Image
 from PIL import Image, ImageTk
 import glob
@@ -33,7 +30,7 @@ root.state('zoomed')
 
 # vamos criar um objeto da classe PhotoImage para
 # carregar o ícone
-icone = PhotoImage(file='imagens\icone_MedConn.png')
+icone = PhotoImage(file='imagens/icone_MedConn.png')
 # agora definimos o ícone para a janela
 root.iconphoto(True, icone)
 
@@ -80,7 +77,7 @@ num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
 
 # define as colunas
 columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
-           'solicitacao', 'requisicao', 'ordem_de_compra', 'empenho', 'observacao')
+           'Solicitação', 'requisicao', 'ordem_de_compra', 'empenho', 'observacao')
 tree = ttk.Treeview(root, columns=columns, show='headings')
 style.configure('Treeview', rowheight=25, bordercolor='#000000',
                 borderwidth=1, separatorcolor='#000000')
@@ -105,8 +102,8 @@ tree.column('quantidade', width=80, minwidth=80)
 tree.heading('numero_ordem', text='Número de Ordem')
 tree.column('numero_ordem', width=85, minwidth=130)
 
-tree.heading('solicitacao', text='Solicitação')
-tree.column('solicitacao', width=90, minwidth=90)
+tree.heading('Solicitação', text='Solicitação')
+tree.column('Solicitação', width=90, minwidth=90)
 
 tree.heading('requisicao', text='Requisição')
 tree.column('requisicao', width=45, minwidth=45)
@@ -132,8 +129,10 @@ for contact in contacts:
 
 # create a scrollbar widget and set its command to the text widget
 scrollbar = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-scrollbar.place(relx=0.99, rely=0.64, relheight=0.345, anchor='ne')
-tree.place(relx=0.02, rely=0.65, relwidth=0.959)
+scrollbar.place(relx=0.983, rely=0.65, relheight=0.35, anchor='ne')
+tree.place(relx=0.02, rely=0.65, relwidth=0.95, relheight=0.35)
+tree.configure(yscroll=scrollbar.set)
+tree['yscrollcommand'] = scrollbar.set
 
 for row in rows:
     contacts.append(row)
@@ -155,43 +154,17 @@ def inserir():
     fornecedor = fornecedor_entry.get()
     medicamento = medicamento_entry.get()
 
-    # Execute a consulta SQL para inserir os dados na tabela
-    c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
-              (fornecedor, medicamento, marca, quantidade, num_ordem))
-
-    # Salve as alterações no banco de dados
-    conn.commit()
-
     if fornecedor and medicamento:
         # insere os dados na tabela
-        tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem), tags=(
-            'linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
+        tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
+                    tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
         error_label.config(text=error_message, fg=root.cget('bg'))
     else:
         error_label.config(text=error_message, fg='red',
                            font=("TkDefaultFont", 11,))
- 
-    if fornecedor and medicamento:
-        # insere os dados na tabela
-        cb_solicitacao = combo_box.get() == "Solicitação"
-        if cb_solicitacao:
-            # Cria a imagem "check"
-            imagem = ImageTk.PhotoImage(Image.open("check.png"))
-            # insere os dados na tabela, incluindo a imagem "check" na coluna "observacao"
-            tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem, imagem))
-        else:
-            tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem), tags=(
-                'linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar'))
-        error_label.config(text=error_message, fg=root.cget('bg'))
-    else:
-        error_label.config(text=error_message, fg='red',
-                           font=("TkDefaultFont", 11,))
-    
-    # Execute a consulta SQL para inserir os dados na tabela
+
     c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
               (fornecedor, medicamento, marca, quantidade, num_ordem))
-
-    # Salve as alterações no banco de dados
     conn.commit()
 
     # limpar as caixas de entrada de texto
@@ -201,17 +174,30 @@ def inserir():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
 
+    option = combo_box.get()
+    # Obtenha a imagem correspondente à opção selecionada
+    image = images[option]
+    image_tk = ImageTk.PhotoImage(image)
+    tree.insert('', 'end', values=(image_tk, "Solicitação", "Requisição", "Ordem de compra", "Empenho"))
+
+# Associar a tecla "Enter" do teclado à função "inserir"
+fornecedor_entry.bind('<Return>', lambda event: inserir())
+medicamento_entry.bind('<Return>', lambda event: inserir())
+marca_entry.bind('<Return>', lambda event: inserir())
+quantidade_entry.bind('<Return>', lambda event: inserir())
+num_ordem_entry.bind('<Return>', lambda event: inserir())
 
 error_message = 'Fornecedor ou Medicamento não informado'
 error_label = tk.Label(text=error_message, fg=root.cget('bg'))
-error_label.place(relx=0.13, rely=0.289, width=290, height=30)
+error_label.place(relx=0.13, rely=0.35, width=290, height=30)
 
-check = tk.PhotoImage(file='imagens\checkredimensionado.png').subsample(5, 5)
+check = tk.PhotoImage(file='imagens/checkredimensionado.png').subsample(5, 5)
 
 # criar o botão "Inserir"
 inserir_button = ttk.Button(
     root, text='Inserir', command=inserir, image=check, compound=RIGHT)
 inserir_button.place(relx=0.02, rely=0.31, width=150, height=30)
+
 
 def save_item(self):
     fornecedor = self.fornecedor_entry.get()
@@ -228,9 +214,11 @@ def save_item(self):
     self.quantidade_entry.delete(0, tk.END)
     self.num_ordem_entry.delete(0, tk.END)
 
+
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=9, column=0, padx=7, pady=14)
+
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
@@ -246,6 +234,10 @@ def excluir_cliente():
 
     # Remove a linha da tree view
     tree.delete(tree.selection())
+
+
+tree.bind('<Delete>', lambda event: excluir_cliente())
+
 
 def editar():
     selected_item = tree.selection()
@@ -270,7 +262,8 @@ def editar():
         num_ordem_entry.insert(0, num_ordem)
         desabilitar_botao_salvar()
     # Salve as alterações no banco de dados
-    
+
+
 def salvar():
     # Obtém a linha selecionada
     linha_selecionada = tree.selection()[0]
@@ -278,7 +271,7 @@ def salvar():
     # Obtém os valores antigos da linha selecionada
     valores = tree.item(linha_selecionada)['values']
     id = valores[0]
-        
+
     # Obtém os novos valores dos campos de entrada
     fornecedor = fornecedor_entry.get()
     medicamento = medicamento_entry.get()
@@ -293,7 +286,8 @@ def salvar():
     tree.set(linha_selecionada, column=3, value=quantidade)
     tree.set(linha_selecionada, column=4, value=num_ordem)
 
-    c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?", (fornecedor, medicamento, marca, quantidade, num_ordem, id))
+    c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?",
+              (fornecedor, medicamento, marca, quantidade, num_ordem, id))
     conn.commit()
 
     fornecedor_entry.delete(0, tk.END)
@@ -301,9 +295,11 @@ def salvar():
     marca_entry.delete(0, tk.END)
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
-    desabilitar_botao_salvar()    
-    
-editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar()])
+    desabilitar_botao_salvar()
+
+
+editar_button = ttk.Button(root, text='Editar', command=lambda: [
+                           editar(), habilitar_botao_salvar()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
 salvar_button = ttk.Button(root, text='Salvar', command=salvar)
@@ -313,41 +309,35 @@ salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
 
 # Adiciona o botão de exclusão
-excluir = tk.PhotoImage(file='imagens\excluir.png').subsample(3, 3)
+excluir = tk.PhotoImage(file='imagens/excluir.png').subsample(3, 3)
 botao_excluir = ttk.Button(
     root, text='', command=inserir, image=excluir, compound=CENTER)
 botao_excluir.place(relx=0.954, rely=0.59, width=40, height=40)
 botao_excluir.config(command=excluir_cliente)
 
+
+images = {
+    'check': Image.open('imagens\check.png')
+}
+
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
+
 
 def desabilitar_botao_salvar():
     salvar_button.config(state="disabled")
 
-salvar_button = ttk.Button(root, text='Salvar', command=salvar, state="disable")
-salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
-salvar_button.config(command=salvar)
 
-
-
-def adicionar_imagem(event):
-    # Verifica se a opção selecionada é "solicitação"
-    if combo_box.get() == "solicitação":
-        # Abre a imagem
-        imagem = Image.open("imagens\check.png")
-        # Cria um objeto PhotoImage com a imagem
-        photo = ImageTk.PhotoImage(imagem)
-        # Obtém a linha selecionada no Treeview
-        linha = tree.focus()
-        # Adiciona a imagem na coluna "solicitação" da linha selecionada
-        tree.insert('', values=["", "", "", "", "", "", photo, "", "", ""])
-
+# definindo a string da combobox
 combo_box = tk.StringVar(value="Selecione uma opção")
 combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
 combo_box_menu = tk.OptionMenu(label_frame, combo_box, *combo_box_options)
 combo_box_menu.place(relx=0.355, rely=0.78, width=250)
-combo_box_menu.bind("<<ComboboxSelected>>", adicionar_imagem)
 
+
+salvar_button = ttk.Button(
+    root, text='Salvar', command=salvar, state="disable")
+salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
+salvar_button.config(command=salvar)
 
 root.mainloop()
