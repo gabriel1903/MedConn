@@ -28,8 +28,7 @@ root.geometry("%dx%d" % (largura, altura))
 fonte_padrao = ("Arial", 11)
 root.state('zoomed')
 
-# vamos criar um objeto da classe PhotoImage para
-# carregar o ícone
+# Vamos criar um objeto da classe PhotoImage para
 icone = PhotoImage(file='imagens/icone_MedConn.png')
 # agora definimos o ícone para a janela
 root.iconphoto(True, icone)
@@ -284,10 +283,11 @@ def salvar():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
     desabilitar_botao_salvar()
+    habilitar_botao_inserirsalvar()
 
 
 editar_button = ttk.Button(root, text='Editar', command=lambda: [
-                           editar(), habilitar_botao_salvar()])
+                           editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
 editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
 
 salvar_button = ttk.Button(root, text='Salvar', command=salvar)
@@ -312,6 +312,13 @@ def habilitar_botao_salvar():
 
 def desabilitar_botao_salvar():
     salvar_button.config(state="disabled")
+
+def habilitar_botao_inserir():
+    inserir_button.config(state="normal")
+
+def desabilitar_botao_inserir():
+    inserir_button.config(state="disabled")
+
 
 # definindo a string da combobox
 combo_box = tk.StringVar(value="Selecione uma opção")
