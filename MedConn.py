@@ -1,22 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image
-from PIL import Image, ImageTk
-import glob
 import os
 import sqlite3
 import textwrap
 from tkinter import *
 import time
-from PIL import Image
 from tkinter import Tk
 from tkinter.ttk import Style
-from ttkthemes import ThemedTk
-import TKinterModernThemes as TKMT
 import tkinter.font as TkFont
-from tkFont import Font
-from ttk import Style, Treeview
-from Tkinter import *
     
 root = tk.Tk()
 # Import the tcl file
@@ -56,17 +47,17 @@ medicamento_label.grid(row=1, column=0, padx=5, pady=5)
 medicamento_entry = ttk.Entry(label_frame, width=30)
 medicamento_entry.grid(row=1, column=1, padx=5, pady=5)
 
-marca_label = ttk.Label(label_frame, text='Marca', font=('Bierstadt', 12, 'bold'))
+marca_label = ttk.Label(label_frame, text='Marca', font=('Bierstadt', 12))
 marca_label.grid(row=2, column=0, padx=5, pady=5)
 marca_entry = ttk.Entry(label_frame, width=30)
 marca_entry.grid(row=2, column=1, padx=5, pady=5)
 
-quantidade_label = ttk.Label(label_frame, text='Quantidade', font=('Bierstadt', 12, 'bold'))
+quantidade_label = ttk.Label(label_frame, text='Quantidade', font=('Bierstadt', 12))
 quantidade_label.grid(row=3, column=0, padx=5, pady=5)
 quantidade_entry = ttk.Entry(label_frame, width=30)
 quantidade_entry.grid(row=3, column=1, padx=5, pady=5)
 
-num_ordem_label = ttk.Label(label_frame, text='Número de Ordem', font=('Bierstadt', 12, 'bold'))
+num_ordem_label = ttk.Label(label_frame, text='Número de Ordem', font=('Bierstadt', 12))
 num_ordem_label.grid(row=4, column=0, padx=5, pady=5)
 num_ordem_entry = ttk.Entry(label_frame, width=30)
 num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
@@ -124,6 +115,7 @@ for contact in contacts:
     tree.insert('', tk.END, values=contact)
     tree.pack(full='x', padx=5, pady=5)
     tree.pack(side='left', fill='both', expand=True)
+
 # criar um widget de barra de rolagem e definir seu comando para a treeview
 scrollbar = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
 scrollbar.place(relx=0.953, rely=0.055, relheight=0.80, anchor='ne')
@@ -137,7 +129,6 @@ horizontalscrollbar.config(command=tree.xview)
 tree.configure(xscrollcommand=horizontalscrollbar.set)
 tree['xscrollcommand'] = horizontalscrollbar.set
 
-
 for row in rows:
     contacts.append(row)
     if None in row:
@@ -145,9 +136,6 @@ for row in rows:
         row = ["" if val is None else val for val in row]
     tree.insert('', 'end', values=row, tags=('linha_par' if len(
         tree.get_children()) % 2 == 0 else 'linha_impar'))
-
-# communicate back to the scrollbar
-tree['yscrollcommand'] = scrollbar.set
 
 # função a ser chamada quando o botão "Inserir" for pressionado
 def inserir():
@@ -176,6 +164,8 @@ def inserir():
     marca_entry.delete(0, tk.END)
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
+    habilitar_botao_salvar() 
+    desabilitar_botao_inserir()
 
 # Associar a tecla "Enter" do teclado à função "inserir"
 fornecedor_entry.bind('<Return>', lambda event: inserir())
@@ -184,14 +174,13 @@ marca_entry.bind('<Return>', lambda event: inserir())
 quantidade_entry.bind('<Return>', lambda event: inserir())
 num_ordem_entry.bind('<Return>', lambda event: inserir())
 
-error_message = 'Fornecedor ou Medicamento não informado'
-error_label = tk.Label(text=error_message, fg=root.cget('bg'))
-error_label.place(relx=0.13, rely=0.35, width=290, height=30)
+error_message = 'Fornecedor ou Medicamento \n não informado'
+error_label = tk.Label(text=error_message, fg=root.cget('bg'), font=('Bierstadt', 12, 'bold'))
+error_label.place(relx=0.045, rely=0.50, width=290, height=35)
 
-# Criar o botão "Inserir"
-inserir_button = ttk.Button(root, text='Inserir', command=inserir, compound='right')
-inserir_button.config = tk.PhotoImage(file='check.png')
-inserir_button.place(relx=0.02, rely=0.31, width=150, height=30)
+# cria um checkbutton fantasma, para manter o tamanho do label_frame
+fantasma_label = ttk.Label(label_frame, text='')
+fantasma_label.grid(row=9, column=0, padx=7, pady=45)
 
 def save_item(self):
     fornecedor = self.fornecedor_entry.get()
@@ -207,11 +196,6 @@ def save_item(self):
     self.marca_entry.delete(0, tk.END)
     self.quantidade_entry.delete(0, tk.END)
     self.num_ordem_entry.delete(0, tk.END)
-
-
-# cria um checkbutton fantasma, para manter o tamanho do label_frame
-fantasma_label = ttk.Label(label_frame, text='')
-fantasma_label.grid(row=9, column=0, padx=7, pady=14)
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
@@ -249,7 +233,9 @@ def editar():
         quantidade_entry.insert(0, quantidade)
         num_ordem_entry.delete(0, tk.END)
         num_ordem_entry.insert(0, num_ordem)
-        desabilitar_botao_salvar()
+    
+    habilitar_botao_salvar()
+    desabilitar_botao_inserir()
     # Salve as alterações no banco de dados
 
 def salvar():
@@ -287,14 +273,17 @@ def salvar():
     habilitar_botao_inserir()
 
 
-editar_button = ttk.Button(root, text='Editar', command=lambda: [
-                           editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
-editar_button.place(relx=0.8, rely=0.59, width=40, height=40)
+style.map("TButton", background=[('disabled', '	#880808')]) 
+salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable", style='TButton')
+# Criar o botão "Inserir"
+inserir_button = ttk.Button(label_frame, text='Inserir', command=inserir, compound='right', style='TButton')
+inserir_button.place(relx=0.02, rely=0.88, width=150, height=30)
 
-salvar_button = ttk.Button(root, text='Salvar', command=salvar)
-salvar_button = ttk.Button(
-    root, text='Salvar', command=salvar, state="disable")
-salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
+editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
+editar_button.place(relx=0.086, rely=0.502, width=150, height=30)
+
+salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable")
+salvar_button.place(relx=0.58, rely=0.88, width=150, height=30)
 salvar_button.config(command=salvar)
 
 # Adiciona o botão de exclusão
@@ -315,32 +304,5 @@ def desabilitar_botao_inserir():
     inserir_button.config(state="disabled")
 
 
-# definindo a string da combobox
-combo_box = tk.StringVar(value="Selecione uma opção")
-combo_box_options = ["Solicitação", "Requisição", "Ordem de compra", "Empenho"]
-combo_box_menu = ttk.OptionMenu(label_frame, combo_box, *combo_box_options)
-combo_box_menu.place(relx=0.355, rely=0.78, width=250)
-
-salvar_button = ttk.Button(
-    root, text='Salvar', command=salvar, state="disable")
-salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
-salvar_button.config(command=salvar)
-
-def config_menu():
-    options_window = tk.Toplevel(root)
-    options_window.title("Configurações")
-    options_window.geometry("600x450")
-    
-    label1 = ttk.LabelFrame(options_window, text="Opção 1")
-    check1 = ttk.Checkbutton(label1)
-    check1.pack(side=tk.RIGHT)
-
-    label2 = ttk.LabelFrame(options_window, text="Opção 2")
-    check2 = ttk.Checkbutton(label2)
-    check2.pack(side=tk.RIGHT)
-
-    # Posiciona os labels na janela principal
-    label1.pack()
-    label2.pack()   
 
 root.mainloop()
