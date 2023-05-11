@@ -3,15 +3,15 @@
 Implementar o indicativo da planilha com base na escolha na combobox
 Campo de adicionar observações
 ✔️ Criar botão de configuração de layout
-testar novo layout com o código 
-                label_frame.pack(side='left', padx=33, pady=10, fill='both')
-                tree.pack(side='left', fill='both', expand=True)
-                scrollbar.pack(side='right', fill='y')
-                inserir_button.pack(side='left', padx=10, pady=10)
+✔️ testar novo layout com o código 
+        label_frame.pack(side='left', padx=33, pady=10, fill='both')
+        tree.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        inserir_button.pack(side='left', padx=10, pady=10)
 
 Opção de anexar PDF
 Opção de baixar o PDF
 Alterar ícone
 Alterar nome
 Implementar ícones
-Melhorar UX
+✔️Melhorar UX

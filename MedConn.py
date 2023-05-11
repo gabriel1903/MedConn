@@ -9,10 +9,19 @@ import textwrap
 from tkinter import *
 import time
 from PIL import Image
-
-
+from tkinter import Tk
+from tkinter.ttk import Style
+from ttkthemes import ThemedTk
+import TKinterModernThemes as TKMT
+import tkinter.font as TkFont
+from tkFont import Font
+from ttk import Style, Treeview
+from Tkinter import *
+    
 root = tk.Tk()
-root.title("MedConn")
+# Import the tcl file
+root.tk.call('source', 'Forest-ttk-theme-1.0/forest-light.tcl')
+
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
@@ -25,47 +34,39 @@ c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCRE
 largura = root.winfo_screenwidth() * 0.8
 altura = root.winfo_screenheight() * 0.8
 root.geometry("%dx%d" % (largura, altura))
-fonte_padrao = ("Arial", 11)
 root.state('zoomed')
-
-# Vamos criar um objeto da classe PhotoImage para
-icone = PhotoImage(file='imagens/icone_MedConn.png')
-# agora definimos o ícone para a janela
-root.iconphoto(True, icone)
-
-# Configura a fonte para todos os widgets da aplicação
-root.option_add("*Font", fonte_padrao)
 
 # Definindo o estilo do LabelFrame
 label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
-label_frame.grid(row=0, column=0, padx=33, pady=10)
+label_frame.pack(side='left', anchor='nw', padx=10, pady=10)
 
 # Fazer a consulta no banco de dados
 c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao FROM database')
 rows = c.fetchall()
 
 # Criando as caixas de entrada de texto dentro do LabelFrame
-fornecedor_label = ttk.Label(label_frame, text='Fornecedor')
+fornecedor_label = ttk.Label(label_frame, text='Fornecedor', font=('Bierstadt', 12))
 fornecedor_label.grid(row=0, column=0, padx=5, pady=5)
 fornecedor_entry = ttk.Entry(label_frame, width=30)
 fornecedor_entry.grid(row=0, column=1, padx=5, pady=5)
 
-medicamento_label = ttk.Label(label_frame, text='Medicamento')
+medicamento_label = ttk.Label(label_frame, text='Medicamento', font=('Bierstadt', 12))
+fornecedor_label.grid(row=0, column=0, padx=5, pady=5)
 medicamento_label.grid(row=1, column=0, padx=5, pady=5)
 medicamento_entry = ttk.Entry(label_frame, width=30)
 medicamento_entry.grid(row=1, column=1, padx=5, pady=5)
 
-marca_label = ttk.Label(label_frame, text='Marca')
+marca_label = ttk.Label(label_frame, text='Marca', font=('Bierstadt', 12, 'bold'))
 marca_label.grid(row=2, column=0, padx=5, pady=5)
 marca_entry = ttk.Entry(label_frame, width=30)
 marca_entry.grid(row=2, column=1, padx=5, pady=5)
 
-quantidade_label = ttk.Label(label_frame, text='Quantidade')
+quantidade_label = ttk.Label(label_frame, text='Quantidade', font=('Bierstadt', 12, 'bold'))
 quantidade_label.grid(row=3, column=0, padx=5, pady=5)
 quantidade_entry = ttk.Entry(label_frame, width=30)
 quantidade_entry.grid(row=3, column=1, padx=5, pady=5)
 
-num_ordem_label = ttk.Label(label_frame, text='Número de Ordem')
+num_ordem_label = ttk.Label(label_frame, text='Número de Ordem', font=('Bierstadt', 12, 'bold'))
 num_ordem_label.grid(row=4, column=0, padx=5, pady=5)
 num_ordem_entry = ttk.Entry(label_frame, width=30)
 num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
@@ -76,39 +77,42 @@ columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
 tree = ttk.Treeview(root, columns=columns, show='headings')
 
 # define estilo para cabeçalho das colunas
+ttk.Style().theme_use('forest-light')
 style = ttk.Style()
-style.configure("Treeview.Heading", font=("Arial", 11))
-
+style.configure("Treeview.Heading", font=('Bierstadt', 12), rowheight=90)
+style = ttk.Style(root) 
+style.configure('Treeview', rowheight=40)
+                                        
 # define textos do cabeçalho das colunas
 tree.heading('fornecedor', text='Fornecedor')
-tree.column('fornecedor', width=100, minwidth=100)
+tree.column('fornecedor', width=90, minwidth=90)
 
 tree.heading('medicamento', text='Medicamento')
-tree.column('medicamento', width=150, minwidth=150)
+tree.column('medicamento', width=105, minwidth=105)
 
 tree.heading('marca', text='Marca')
-tree.column('marca', width=87, minwidth=87)
+tree.column('marca', width=70, minwidth=70)
 
 tree.heading('quantidade', text='Quantidade')
-tree.column('quantidade', width=80, minwidth=80)
+tree.column('quantidade', width=120, minwidth=120)
 
-tree.heading('numero_ordem', text='Número de Ordem')
-tree.column('numero_ordem', width=85, minwidth=130)
+tree.heading('numero_ordem', text='Número de \n Ordem', anchor='w')
+tree.column('numero_ordem', width=100, minwidth=100)
 
 tree.heading('Solicitação', text='Solicitação')
-tree.column('Solicitação', width=90, minwidth=90)
+tree.column('Solicitação', width=80, minwidth=80)
 
 tree.heading('requisicao', text='Requisição')
-tree.column('requisicao', width=45, minwidth=45)
+tree.column('requisicao', width=80, minwidth=80)
 
-tree.heading('ordem_de_compra', text='Ordem de Compra')
+tree.heading('ordem_de_compra', text='Ordem de \n Compra')
 tree.column('ordem_de_compra', width=90, minwidth=90)
 
 tree.heading('empenho', text='Empenho')
-tree.column('empenho', width=40, minwidth=40)
+tree.column('empenho', width=80, minwidth=80)
 
 tree.heading('observacao', text='Observação')
-tree.column('observacao', width=350, minwidth=350)
+tree.column('observacao', width=300, minwidth=300)
 
 contacts = []
 
@@ -119,13 +123,20 @@ tree.tag_configure('linha_impar', background='#e6e3e3')
 for contact in contacts:
     tree.insert('', tk.END, values=contact)
     tree.pack(full='x', padx=5, pady=5)
-
-# create a scrollbar widget and set its command to the text widget
+    tree.pack(side='left', fill='both', expand=True)
+# criar um widget de barra de rolagem e definir seu comando para a treeview
 scrollbar = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-scrollbar.place(relx=0.983, rely=0.65, relheight=0.35, anchor='ne')
-tree.place(relx=0.02, rely=0.65, relwidth=0.95, relheight=0.35)
-tree.configure(yscroll=scrollbar.set)
+scrollbar.place(relx=0.953, rely=0.055, relheight=0.80, anchor='ne')
+tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
+tree.configure(yscrollcommand=scrollbar.set)
 tree['yscrollcommand'] = scrollbar.set
+
+horizontalscrollbar = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
+horizontalscrollbar.place(relx=0.306, rely=0.965, relwidth=0.642)
+horizontalscrollbar.config(command=tree.xview)
+tree.configure(xscrollcommand=horizontalscrollbar.set)
+tree['xscrollcommand'] = horizontalscrollbar.set
+
 
 for row in rows:
     contacts.append(row)
@@ -153,8 +164,7 @@ def inserir():
                     tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
         error_label.config(text=error_message, fg=root.cget('bg'))
     else:
-        error_label.config(text=error_message, fg='red',
-                           font=("TkDefaultFont", 11,))
+        error_label.config(text=error_message, fg='red')
 
     c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
               (fornecedor, medicamento, marca, quantidade, num_ordem))
@@ -167,12 +177,6 @@ def inserir():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
 
-    option = combo_box.get()
-    # Obtenha a imagem correspondente à opção selecionada
-    image = images[option]
-    image_tk = ImageTk.PhotoImage(image)
-    tree.insert('', 'end', values=(image_tk, "Solicitação", "Requisição", "Ordem de compra", "Empenho"))
-
 # Associar a tecla "Enter" do teclado à função "inserir"
 fornecedor_entry.bind('<Return>', lambda event: inserir())
 medicamento_entry.bind('<Return>', lambda event: inserir())
@@ -184,13 +188,10 @@ error_message = 'Fornecedor ou Medicamento não informado'
 error_label = tk.Label(text=error_message, fg=root.cget('bg'))
 error_label.place(relx=0.13, rely=0.35, width=290, height=30)
 
-check = tk.PhotoImage(file='imagens/checkredimensionado.png').subsample(5, 5)
-
-# criar o botão "Inserir"
-inserir_button = ttk.Button(
-    root, text='Inserir', command=inserir, image=check, compound=RIGHT)
+# Criar o botão "Inserir"
+inserir_button = ttk.Button(root, text='Inserir', command=inserir, compound='right')
+inserir_button.config = tk.PhotoImage(file='check.png')
 inserir_button.place(relx=0.02, rely=0.31, width=150, height=30)
-
 
 def save_item(self):
     fornecedor = self.fornecedor_entry.get()
@@ -283,7 +284,7 @@ def salvar():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
     desabilitar_botao_salvar()
-    habilitar_botao_inserirsalvar()
+    habilitar_botao_inserir()
 
 
 editar_button = ttk.Button(root, text='Editar', command=lambda: [
@@ -297,15 +298,9 @@ salvar_button.place(relx=0.7, rely=0.59, width=40, height=40)
 salvar_button.config(command=salvar)
 
 # Adiciona o botão de exclusão
-excluir = tk.PhotoImage(file='imagens/excluir.png').subsample(3, 3)
-botao_excluir = ttk.Button(
-    root, text='', command=inserir, image=excluir, compound=CENTER)
+botao_excluir = ttk.Button( root, text='Excluir', compound=CENTER)
 botao_excluir.place(relx=0.9455, rely=0.59, width=40, height=40)
-botao_excluir.config(command=excluir_cliente)
 
-images = {
-    'check': Image.open('imagens\check.png')
-}
 
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
@@ -347,14 +342,5 @@ def config_menu():
     # Posiciona os labels na janela principal
     label1.pack()
     label2.pack()   
-
-
-config = tk.PhotoImage(file='imagens/config.png').subsample(17, 17)
-botao_config = ttk.Button(root, text='', image=config, compound=CENTER)
-botao_config.place(relx=0.9455, rely=0.02, width=40, height=40)
-botao_config.config(command=config_menu)
-
-
-
 
 root.mainloop()
