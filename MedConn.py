@@ -279,7 +279,7 @@ salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar()
 inserir_button = ttk.Button(label_frame, text='Inserir', command=inserir, compound='right', style='TButton')
 inserir_button.place(relx=0.02, rely=0.88, width=150, height=30)
 
-editar_button = ttk.Button(root, text='Editar', command=lambda: [editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
+editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
 editar_button.place(relx=0.086, rely=0.502, width=150, height=30)
 
 salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable")
@@ -302,7 +302,5 @@ def habilitar_botao_inserir():
 
 def desabilitar_botao_inserir():
     inserir_button.config(state="disabled")
-
-
 
 root.mainloop()
