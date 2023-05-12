@@ -8,7 +8,8 @@ import time
 from tkinter import Tk
 from tkinter.ttk import Style
 import tkinter.font as TkFont
-    
+import PySimpleGUI as sg
+
 root = tk.Tk()
 # Import the tcl file
 root.tk.call('source', 'Forest-ttk-theme-1.0/forest-light.tcl')
@@ -151,21 +152,21 @@ def inserir():
         tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
                     tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
         error_label.config(text=error_message, fg=root.cget('bg'))
+                
+        c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
+                  (fornecedor, medicamento, marca, quantidade, num_ordem))
+        conn.commit()
+        
+        # limpar as caixas de entrada de texto
+        fornecedor_entry.delete(0, tk.END)
+        medicamento_entry.delete(0, tk.END)
+        marca_entry.delete(0, tk.END)
+        quantidade_entry.delete(0, tk.END)
+        num_ordem_entry.delete(0, tk.END)
+        habilitar_botao_salvar() 
+        desabilitar_botao_inserir()
     else:
-        error_label.config(text=error_message, fg='red')
-
-    c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
-              (fornecedor, medicamento, marca, quantidade, num_ordem))
-    conn.commit()
-
-    # limpar as caixas de entrada de texto
-    fornecedor_entry.delete(0, tk.END)
-    medicamento_entry.delete(0, tk.END)
-    marca_entry.delete(0, tk.END)
-    quantidade_entry.delete(0, tk.END)
-    num_ordem_entry.delete(0, tk.END)
-    habilitar_botao_salvar() 
-    desabilitar_botao_inserir()
+        error_label.config(text="Informe o fornecedor e o medicamento.", fg='red')
 
 # Associar a tecla "Enter" do teclado à função "inserir"
 fornecedor_entry.bind('<Return>', lambda event: inserir())
@@ -177,25 +178,6 @@ num_ordem_entry.bind('<Return>', lambda event: inserir())
 error_message = 'Fornecedor ou Medicamento \n não informado'
 error_label = tk.Label(text=error_message, fg=root.cget('bg'), font=('Bierstadt', 12, 'bold'))
 error_label.place(relx=0.045, rely=0.50, width=290, height=35)
-
-# cria um checkbutton fantasma, para manter o tamanho do label_frame
-fantasma_label = ttk.Label(label_frame, text='')
-fantasma_label.grid(row=9, column=0, padx=7, pady=45)
-
-def save_item(self):
-    fornecedor = self.fornecedor_entry.get()
-    medicamento = self.medicamento_entry.get()
-    marca = self.marca_entry.get()
-    quantidade = self.quantidade_entry.get()
-    num_ordem = self.num_ordem_entry.get()
-
-    self.insert_item('fornecedor', 'medicamento',
-                     'marca', 'quantidade', 'num_ordem')
-    self.fornecedor_entry.delete(0, tk.END)
-    self.medicamento_entry.delete(0, tk.END)
-    self.marca_entry.delete(0, tk.END)
-    self.quantidade_entry.delete(0, tk.END)
-    self.num_ordem_entry.delete(0, tk.END)
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
@@ -280,7 +262,7 @@ inserir_button = ttk.Button(label_frame, text='Inserir', command=inserir, compou
 inserir_button.place(relx=0.02, rely=0.88, width=150, height=30)
 
 editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
-editar_button.place(relx=0.086, rely=0.502, width=150, height=30)
+editar_button.place(relx=0.086, rely=0.902, width=150, height=30)
 
 salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable")
 salvar_button.place(relx=0.58, rely=0.88, width=150, height=30)
@@ -289,6 +271,10 @@ salvar_button.config(command=salvar)
 # Adiciona o botão de exclusão
 botao_excluir = ttk.Button( root, text='Excluir', compound=CENTER)
 botao_excluir.place(relx=0.9455, rely=0.59, width=40, height=40)
+
+# cria um checkbutton fantasma, para manter o tamanho do label_frame
+fantasma_label = ttk.Label(label_frame, text='')
+fantasma_label.grid(row=50, column=0, padx=7, pady=85)
 
 
 def habilitar_botao_salvar():
