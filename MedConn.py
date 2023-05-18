@@ -8,12 +8,15 @@ import time
 from tkinter import Tk
 from tkinter.ttk import Style
 import tkinter.font as TkFont
-import PySimpleGUI as sg
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+import ttkbootstrap as ttk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 
-root = tk.Tk()
-# Import the tcl file
-root.tk.call('source', 'Forest-ttk-theme-1.0/forest-light.tcl')
-
+# new approach
+root = ttk.Window(themename="farmacia")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
@@ -27,6 +30,8 @@ largura = root.winfo_screenwidth() * 0.8
 altura = root.winfo_screenheight() * 0.8
 root.geometry("%dx%d" % (largura, altura))
 root.state('zoomed')
+
+style=ttk.Style()
 
 # Definindo o estilo do LabelFrame
 label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
@@ -67,14 +72,12 @@ num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
 columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
            'Solicitação', 'requisicao', 'ordem_de_compra', 'empenho', 'observacao')
 tree = ttk.Treeview(root, columns=columns, show='headings')
+tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
 
 # define estilo para cabeçalho das colunas
-ttk.Style().theme_use('forest-light')
-style = ttk.Style()
 style.configure("Treeview.Heading", font=('Bierstadt', 12), rowheight=90)
-style = ttk.Style(root) 
 style.configure('Treeview', rowheight=40)
-                                        
+
 # define textos do cabeçalho das colunas
 tree.heading('fornecedor', text='Fornecedor')
 tree.column('fornecedor', width=90, minwidth=90)
@@ -110,25 +113,12 @@ contacts = []
 
 # configura as tags com as cores desejadas
 tree.tag_configure('linha_par', background='#ffffff')
-tree.tag_configure('linha_impar', background='#e6e3e3')
+tree.tag_configure('linha_impar', background='#cedbf5')
 
 for contact in contacts:
     tree.insert('', tk.END, values=contact)
     tree.pack(full='x', padx=5, pady=5)
     tree.pack(side='left', fill='both', expand=True)
-
-# criar um widget de barra de rolagem e definir seu comando para a treeview
-scrollbar = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-scrollbar.place(relx=0.953, rely=0.055, relheight=0.80, anchor='ne')
-tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
-tree.configure(yscrollcommand=scrollbar.set)
-tree['yscrollcommand'] = scrollbar.set
-
-horizontalscrollbar = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
-horizontalscrollbar.place(relx=0.306, rely=0.965, relwidth=0.642)
-horizontalscrollbar.config(command=tree.xview)
-tree.configure(xscrollcommand=horizontalscrollbar.set)
-tree['xscrollcommand'] = horizontalscrollbar.set
 
 for row in rows:
     contacts.append(row)
@@ -181,7 +171,6 @@ error_label.place(relx=0.045, rely=0.50, width=290, height=35)
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
-    
     fornecedor_selecionado = tree.item(tree.selection())['values'][0]
 
     # Exclui a linha no banco de dados
@@ -215,10 +204,8 @@ def editar():
         quantidade_entry.insert(0, quantidade)
         num_ordem_entry.delete(0, tk.END)
         num_ordem_entry.insert(0, num_ordem)
-    
-    habilitar_botao_salvar()
-    desabilitar_botao_inserir()
-    # Salve as alterações no banco de dados
+        habilitar_botao_salvar()
+        desabilitar_botao_inserir()
 
 def salvar():
     # Obtém a linha selecionada
@@ -245,37 +232,38 @@ def salvar():
     c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?",
               (fornecedor, medicamento, marca, quantidade, num_ordem, id))
     conn.commit()
-
+ 
     fornecedor_entry.delete(0, tk.END)
     medicamento_entry.delete(0, tk.END)
     marca_entry.delete(0, tk.END)
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
-    desabilitar_botao_salvar()
     habilitar_botao_inserir()
+    salvar_button.place_forget()
 
-
-style.map("TButton", background=[('disabled', '	#880808')]) 
-salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable", style='TButton')
 # Criar o botão "Inserir"
-inserir_button = ttk.Button(label_frame, text='Inserir', command=inserir, compound='right', style='TButton')
-inserir_button.place(relx=0.02, rely=0.88, width=150, height=30)
+inserir_button = ttk.Button(label_frame, text='Inserir', command=lambda: [inserir()], bootstyle=(SUCCESS, OUTLINE))
+inserir_button.place(relx=0.16, rely=0.80, width=225, height=30)
 
-editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), habilitar_botao_salvar(), desabilitar_botao_inserir()])
-editar_button.place(relx=0.086, rely=0.902, width=150, height=30)
+editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), salvar_sobre_inserir()], bootstyle=(SUCCESS, OUTLINE))
+editar_button.place(relx=0.16, rely=0.90, width=225, height=30)
 
-salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir()], state="disable")
-salvar_button.place(relx=0.58, rely=0.88, width=150, height=30)
+salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir(), inserir_sobre_salvar()], bootstyle=(SUCCESS, OUTLINE))
 salvar_button.config(command=salvar)
 
+def salvar_sobre_inserir():
+    salvar_button.place(relx=0.16, rely=0.80, width=225, height=30)
+
+def inserir_sobre_salvar():
+    salvar_button.place_forget()
+   
 # Adiciona o botão de exclusão
-botao_excluir = ttk.Button( root, text='Excluir', compound=CENTER)
+botao_excluir = ttk.Button( root, text='Excluir', compound=CENTER, bootstyle=(SUCCESS, OUTLINE))
 botao_excluir.place(relx=0.9455, rely=0.59, width=40, height=40)
 
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
 fantasma_label.grid(row=50, column=0, padx=7, pady=85)
-
 
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
