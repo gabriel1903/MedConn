@@ -8,15 +8,13 @@ import time
 from tkinter import Tk
 from tkinter.ttk import Style
 import tkinter.font as TkFont
-import tkinter as tk
-import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from tkinter import font
 import ttkbootstrap as ttk
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap.tableview import Tableview
 
 # new approach
-root = ttk.Window(themename="farmacia")
+root = ttk.Window(themename="tema_principal")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
@@ -45,7 +43,7 @@ rows = c.fetchall()
 fornecedor_label = ttk.Label(label_frame, text='Fornecedor', font=('Bierstadt', 12))
 fornecedor_label.grid(row=0, column=0, padx=5, pady=5)
 fornecedor_entry = ttk.Entry(label_frame, width=30)
-fornecedor_entry.grid(row=0, column=1, padx=5, pady=5)
+fornecedor_entry.grid(row=0, column=1, padx=3, pady=5)
 
 medicamento_label = ttk.Label(label_frame, text='Medicamento', font=('Bierstadt', 12))
 fornecedor_label.grid(row=0, column=0, padx=5, pady=5)
@@ -75,40 +73,39 @@ tree = ttk.Treeview(root, columns=columns, show='headings')
 tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
 
 # define estilo para cabeçalho das colunas
-style.configure("Treeview.Heading", font=('Bierstadt', 12), rowheight=90)
-style.configure('Treeview', rowheight=40)
+style.configure('Treeview', rowheight=65)
 
 # define textos do cabeçalho das colunas
 tree.heading('fornecedor', text='Fornecedor')
-tree.column('fornecedor', width=90, minwidth=90)
+tree.column('fornecedor', width=100, minwidth=120, anchor="center")
 
 tree.heading('medicamento', text='Medicamento')
-tree.column('medicamento', width=105, minwidth=105)
+tree.column('medicamento', width=125, minwidth=145, anchor="center")
 
 tree.heading('marca', text='Marca')
-tree.column('marca', width=70, minwidth=70)
+tree.column('marca', width=70, minwidth=70, anchor="center")
 
 tree.heading('quantidade', text='Quantidade')
-tree.column('quantidade', width=120, minwidth=120)
+tree.column('quantidade', width=110, minwidth=120, anchor="center")
 
-tree.heading('numero_ordem', text='Número de \n Ordem', anchor='w')
-tree.column('numero_ordem', width=100, minwidth=100)
+tree.heading('numero_ordem', text='Nº de Ordem')
+tree.column('numero_ordem', width=110, minwidth=130, anchor="center")
 
 tree.heading('Solicitação', text='Solicitação')
-tree.column('Solicitação', width=80, minwidth=80)
+tree.column('Solicitação', width=90, minwidth=115, anchor="center")
 
 tree.heading('requisicao', text='Requisição')
-tree.column('requisicao', width=80, minwidth=80)
+tree.column('requisicao', width=90, minwidth=110, anchor="center")
 
-tree.heading('ordem_de_compra', text='Ordem de \n Compra')
-tree.column('ordem_de_compra', width=90, minwidth=90)
+tree.heading('ordem_de_compra', text='Ordem')
+tree.column('ordem_de_compra', width=70, minwidth=90, anchor="center")
 
 tree.heading('empenho', text='Empenho')
-tree.column('empenho', width=80, minwidth=80)
+tree.column('empenho', width=80, minwidth=95, anchor="center")
 
 tree.heading('observacao', text='Observação')
-tree.column('observacao', width=300, minwidth=300)
-
+tree.column('observacao', width=300, minwidth=300, anchor="center")
+    
 contacts = []
 
 # configura as tags com as cores desejadas
@@ -141,8 +138,7 @@ def inserir():
         # insere os dados na tabela
         tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
                     tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
-        error_label.config(text=error_message, fg=root.cget('bg'))
-                
+    
         c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
                   (fornecedor, medicamento, marca, quantidade, num_ordem))
         conn.commit()
@@ -154,20 +150,24 @@ def inserir():
         quantidade_entry.delete(0, tk.END)
         num_ordem_entry.delete(0, tk.END)
         habilitar_botao_salvar() 
-        desabilitar_botao_inserir()
+        
+        inserir_button.config(bootstyle=(SUCCESS, OUTLINE))
+        fornecedor_entry.config(bootstyle=(DEFAULT))
+        medicamento_entry.config(bootstyle=(DEFAULT))              
     else:
-        error_label.config(text="Informe o fornecedor e o medicamento.", fg='red')
+        inserir_button.config(bootstyle=(DANGER, OUTLINE))
+        if not fornecedor:
+            fornecedor_entry.config(bootstyle=(DANGER))
+        if not medicamento:
+            medicamento_entry.config(bootstyle=(DANGER))
 
+        
 # Associar a tecla "Enter" do teclado à função "inserir"
 fornecedor_entry.bind('<Return>', lambda event: inserir())
 medicamento_entry.bind('<Return>', lambda event: inserir())
 marca_entry.bind('<Return>', lambda event: inserir())
 quantidade_entry.bind('<Return>', lambda event: inserir())
 num_ordem_entry.bind('<Return>', lambda event: inserir())
-
-error_message = 'Fornecedor ou Medicamento \n não informado'
-error_label = tk.Label(text=error_message, fg=root.cget('bg'), font=('Bierstadt', 12, 'bold'))
-error_label.place(relx=0.045, rely=0.50, width=290, height=35)
 
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
@@ -239,27 +239,23 @@ def salvar():
     quantidade_entry.delete(0, tk.END)
     num_ordem_entry.delete(0, tk.END)
     habilitar_botao_inserir()
-    salvar_button.place_forget()
+    inserir_sobre_salvar()
 
 # Criar o botão "Inserir"
 inserir_button = ttk.Button(label_frame, text='Inserir', command=lambda: [inserir()], bootstyle=(SUCCESS, OUTLINE))
-inserir_button.place(relx=0.16, rely=0.80, width=225, height=30)
+inserir_button.place(relx=0.21, rely=0.80, width=250, height=35)
 
 editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), salvar_sobre_inserir()], bootstyle=(SUCCESS, OUTLINE))
-editar_button.place(relx=0.16, rely=0.90, width=225, height=30)
+editar_button.place(relx=0.21, rely=0.90, width=250, height=35)
 
 salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir(), inserir_sobre_salvar()], bootstyle=(SUCCESS, OUTLINE))
 salvar_button.config(command=salvar)
 
 def salvar_sobre_inserir():
-    salvar_button.place(relx=0.16, rely=0.80, width=225, height=30)
+    salvar_button.place(relx=0.21, rely=0.80, width=250, height=35)
 
 def inserir_sobre_salvar():
     salvar_button.place_forget()
-   
-# Adiciona o botão de exclusão
-botao_excluir = ttk.Button( root, text='Excluir', compound=CENTER, bootstyle=(SUCCESS, OUTLINE))
-botao_excluir.place(relx=0.9455, rely=0.59, width=40, height=40)
 
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
