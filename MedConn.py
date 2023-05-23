@@ -14,7 +14,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.tableview import Tableview
 
 # new approach
-root = ttk.Window(themename="tema_principal")
+root = ttk.Window(themename="litera")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
@@ -72,6 +72,10 @@ columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
 tree = ttk.Treeview(root, columns=columns, show='headings')
 tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
 
+scrollbar = ttk.Scrollbar(tree, orient="vertical", command=tree.yview, bootstyle="default-round")
+scrollbar.place(x=1128, y=1, height=795)
+tree.configure(yscrollcommand=scrollbar.set)
+
 # define estilo para cabeçalho das colunas
 style.configure('Treeview', rowheight=65)
 
@@ -104,8 +108,8 @@ tree.heading('empenho', text='Empenho')
 tree.column('empenho', width=80, minwidth=95, anchor="center")
 
 tree.heading('observacao', text='Observação')
-tree.column('observacao', width=300, minwidth=300, anchor="center")
-    
+tree.column('observacao', width=140, minwidth=140, anchor="center")
+
 contacts = []
 
 # configura as tags com as cores desejadas
@@ -138,7 +142,9 @@ def inserir():
         # insere os dados na tabela
         tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
                     tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
-    
+        
+        radio_buttons()
+        
         c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
                   (fornecedor, medicamento, marca, quantidade, num_ordem))
         conn.commit()
@@ -232,7 +238,7 @@ def salvar():
     c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?",
               (fornecedor, medicamento, marca, quantidade, num_ordem, id))
     conn.commit()
- 
+
     fornecedor_entry.delete(0, tk.END)
     medicamento_entry.delete(0, tk.END)
     marca_entry.delete(0, tk.END)
@@ -272,5 +278,57 @@ def habilitar_botao_inserir():
 
 def desabilitar_botao_inserir():
     inserir_button.config(state="disabled")
+
+def radio_buttons():
+    # Obtém o valor do radio button selecionado
+    selecionado = radio_var.get()
+
+    # Obtém os itens/linhas existentes na Treeview
+    items = tree.get_children()
+
+    for item in items:
+        # Atualiza as colunas na Treeview com base na seleção
+        if selecionado == "Solicitação":
+            tree.set(item, 'Solicitação', 'OK')
+            tree.set(item, 'Requisição', 'OUT')
+            tree.set(item, 'Ordem', 'OUT')
+            tree.set(item, 'Empenho', 'OUT')
+        elif selecionado == "Requisição":
+            tree.set(item, 'Solicitação', 'OK')
+            tree.set(item, 'Requisição', 'OK')
+            tree.set(item, 'Ordem', 'OUT')
+            tree.set(item, 'Empenho', 'OUT')
+        elif selecionado == "Ordem":
+            tree.set(item, 'Solicitação', 'OK')
+            tree.set(item, 'Requisição', 'OK')
+            tree.set(item, 'Ordem', 'OK')
+            tree.set(item, 'Empenho', 'OUT')
+        elif selecionado == "Empenho":
+            tree.set(item, 'Solicitação', 'OK')
+            tree.set(item, 'Requisição', 'OK')
+            tree.set(item, 'Ordem', 'OK')
+            tree.set(item, 'Empenho', 'OK')
+
+    # Limpar seleção dos radiobuttons
+    radio_var.set(None)
+
+lf_radio = ttk.LabelFrame(label_frame, text='Informações do Medicamento')
+lf_radio.place(relx=0.02, rely=0.55, width=333, height=70)
+
+# Cria os radio buttons
+radio_var = tk.StringVar()
+
+solicitacao_radio = ttk.Radiobutton(lf_radio, text="Solicitação", variable=radio_var, value="Solicitação", command=radio_buttons)
+solicitacao_radio.place(relx=0.01, rely=0.06, width=80, height=35)
+
+requisicao_radio = ttk.Radiobutton(lf_radio, text="Requisição", variable=radio_var, value="Requisição", command=radio_buttons)
+requisicao_radio.place(relx=0.26, rely=0.06, width=80, height=35)
+
+ordem_radio = ttk.Radiobutton(lf_radio, text="Ordem", variable=radio_var, value="Ordem", command=radio_buttons)
+ordem_radio.place(relx=0.52, rely=0.06, width=80, height=35)
+
+empenho_radio = ttk.Radiobutton(lf_radio, text="Empenho", variable=radio_var, value="Empenho", command=radio_buttons)
+empenho_radio.place(relx=0.73, rely=0.085, width=80, height=30)
+
 
 root.mainloop()
