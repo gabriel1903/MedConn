@@ -14,21 +14,20 @@ import ttkbootstrap as ttk
 from ttkbootstrap.tableview import Tableview
 
 # new approach
-root = ttk.Window(themename="litera")
+root = ttk.Window(themename="tema_principal")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
 
 # Crie um cursor para a conexão
 c = conn.cursor()
-c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao TEXT,requisicao TEXT, ordem_de_compra TEXT, empenho TEXT, observacao TEXT)')
+c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao BLOB, requisicao BLOB, ordem_de_compra BLOB, empenho BLOB, emoji TEXT, observacao TEXT)')
 
 # define a largura e altura da janela
 largura = root.winfo_screenwidth() * 0.8
 altura = root.winfo_screenheight() * 0.8
 root.geometry("%dx%d" % (largura, altura))
 root.state('zoomed')
-
 style=ttk.Style()
 
 # Definindo o estilo do LabelFrame
@@ -36,8 +35,12 @@ label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
 label_frame.pack(side='left', anchor='nw', padx=10, pady=10)
 
 # Fazer a consulta no banco de dados
-c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao FROM database')
+c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao, emoji FROM database')
 rows = c.fetchall()
+    
+# Consulte os emojis na tabela do banco de dados
+c.execute('SELECT emoji FROM database')
+emojis = c.fetchall()
 
 # Criando as caixas de entrada de texto dentro do LabelFrame
 fornecedor_label = ttk.Label(label_frame, text='Fornecedor', font=('Bierstadt', 12))
@@ -72,8 +75,9 @@ columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
 tree = ttk.Treeview(root, columns=columns, show='headings')
 tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
 
-scrollbar = ttk.Scrollbar(tree, orient="vertical", command=tree.yview, bootstyle="default-round")
-scrollbar.place(x=1128, y=1, height=795)
+# Configura a barra de rolagem
+scrollbar = ttk.Scrollbar(root, orient="vertical", command=tree.yview)
+scrollbar.place(relx=0.958, rely=0.02, relheight=0.9555, anchor='ne')
 tree.configure(yscrollcommand=scrollbar.set)
 
 # define estilo para cabeçalho das colunas
@@ -112,6 +116,9 @@ tree.column('observacao', width=140, minwidth=140, anchor="center")
 
 contacts = []
 
+
+
+
 # configura as tags com as cores desejadas
 tree.tag_configure('linha_par', background='#ffffff')
 tree.tag_configure('linha_impar', background='#cedbf5')
@@ -129,7 +136,6 @@ for row in rows:
     tree.insert('', 'end', values=row, tags=('linha_par' if len(
         tree.get_children()) % 2 == 0 else 'linha_impar'))
 
-# função a ser chamada quando o botão "Inserir" for pressionado
 def inserir():
     # obter as informações do medicamento a partir das caixas de entrada de texto
     marca = marca_entry.get()
@@ -137,36 +143,66 @@ def inserir():
     num_ordem = num_ordem_entry.get()
     fornecedor = fornecedor_entry.get()
     medicamento = medicamento_entry.get()
+    selecionado = radio_var.get()
 
     if fornecedor and medicamento:
         # insere os dados na tabela
-        tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
-                    tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
-        
-        radio_buttons()
-        
-        c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
-                  (fornecedor, medicamento, marca, quantidade, num_ordem))
+        item = tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
+                           tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
+
+        # Atualiza as colunas na Treeview com base na seleção
+        if selecionado == "Solicitação":
+            tree.set(item, '#6', '\u2713')  # Emoji de marca de seleção
+            tree.set(item, '#7', '\u274c')  # Emoji de marca de cruz
+            tree.set(item, '#8', '\u274c')  # Emoji de marca de cruz
+            tree.set(item, '#9', '\u274c')  # Emoji de marca de cruz
+
+        elif selecionado == "Requisição":
+            tree.set(item, '#6', '✅')
+            tree.set(item, '#7', '✅')
+            tree.set(item, '#8', '❌')
+            tree.set(item, '#9', '❌')
+        elif selecionado == "Ordem":
+            tree.set(item, '#6', '✅')
+            tree.set(item, '#7', '✅')
+            tree.set(item, '#8', '✅')
+            tree.set(item, '#9', '❌')
+        elif selecionado == "Empenho":
+            tree.set(item, '#6', '✅')
+            tree.set(item, '#7', '✅')
+            tree.set(item, '#8', '✅')
+            tree.set(item, '#9', '✅')
+
+        # Limpar seleção dos radiobuttons
+        radio_var.set(None)
+
+        # Converter os emojis para a codificação UTF-8
+        solicitacao = '✅'.encode('utf-8')
+        requisicao = '✅'.encode('utf-8')
+        ordem_de_compra = '✅'.encode('utf-8')
+        empenho = '✅'.encode('utf-8')
+
+        c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  (fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho))
         conn.commit()
-        
+
         # limpar as caixas de entrada de texto
         fornecedor_entry.delete(0, tk.END)
         medicamento_entry.delete(0, tk.END)
         marca_entry.delete(0, tk.END)
         quantidade_entry.delete(0, tk.END)
         num_ordem_entry.delete(0, tk.END)
-        habilitar_botao_salvar() 
-        
+        habilitar_botao_salvar()
+
         inserir_button.config(bootstyle=(SUCCESS, OUTLINE))
         fornecedor_entry.config(bootstyle=(DEFAULT))
-        medicamento_entry.config(bootstyle=(DEFAULT))              
+        medicamento_entry.config(bootstyle=(DEFAULT))
     else:
         inserir_button.config(bootstyle=(DANGER, OUTLINE))
         if not fornecedor:
             fornecedor_entry.config(bootstyle=(DANGER))
         if not medicamento:
             medicamento_entry.config(bootstyle=(DANGER))
-
         
 # Associar a tecla "Enter" do teclado à função "inserir"
 fornecedor_entry.bind('<Return>', lambda event: inserir())
@@ -174,7 +210,7 @@ medicamento_entry.bind('<Return>', lambda event: inserir())
 marca_entry.bind('<Return>', lambda event: inserir())
 quantidade_entry.bind('<Return>', lambda event: inserir())
 num_ordem_entry.bind('<Return>', lambda event: inserir())
-
+    
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
     fornecedor_selecionado = tree.item(tree.selection())['values'][0]
@@ -279,56 +315,22 @@ def habilitar_botao_inserir():
 def desabilitar_botao_inserir():
     inserir_button.config(state="disabled")
 
-def radio_buttons():
-    # Obtém o valor do radio button selecionado
-    selecionado = radio_var.get()
-
-    # Obtém os itens/linhas existentes na Treeview
-    items = tree.get_children()
-
-    for item in items:
-        # Atualiza as colunas na Treeview com base na seleção
-        if selecionado == "Solicitação":
-            tree.set(item, 'Solicitação', 'OK')
-            tree.set(item, 'Requisição', 'OUT')
-            tree.set(item, 'Ordem', 'OUT')
-            tree.set(item, 'Empenho', 'OUT')
-        elif selecionado == "Requisição":
-            tree.set(item, 'Solicitação', 'OK')
-            tree.set(item, 'Requisição', 'OK')
-            tree.set(item, 'Ordem', 'OUT')
-            tree.set(item, 'Empenho', 'OUT')
-        elif selecionado == "Ordem":
-            tree.set(item, 'Solicitação', 'OK')
-            tree.set(item, 'Requisição', 'OK')
-            tree.set(item, 'Ordem', 'OK')
-            tree.set(item, 'Empenho', 'OUT')
-        elif selecionado == "Empenho":
-            tree.set(item, 'Solicitação', 'OK')
-            tree.set(item, 'Requisição', 'OK')
-            tree.set(item, 'Ordem', 'OK')
-            tree.set(item, 'Empenho', 'OK')
-
-    # Limpar seleção dos radiobuttons
-    radio_var.set(None)
-
 lf_radio = ttk.LabelFrame(label_frame, text='Informações do Medicamento')
 lf_radio.place(relx=0.02, rely=0.55, width=333, height=70)
 
 # Cria os radio buttons
 radio_var = tk.StringVar()
 
-solicitacao_radio = ttk.Radiobutton(lf_radio, text="Solicitação", variable=radio_var, value="Solicitação", command=radio_buttons)
+solicitacao_radio = ttk.Radiobutton(lf_radio, text="Solicitação", variable=radio_var, value="Solicitação")
 solicitacao_radio.place(relx=0.01, rely=0.06, width=80, height=35)
 
-requisicao_radio = ttk.Radiobutton(lf_radio, text="Requisição", variable=radio_var, value="Requisição", command=radio_buttons)
+requisicao_radio = ttk.Radiobutton(lf_radio, text="Requisição", variable=radio_var, value="Requisição")
 requisicao_radio.place(relx=0.26, rely=0.06, width=80, height=35)
 
-ordem_radio = ttk.Radiobutton(lf_radio, text="Ordem", variable=radio_var, value="Ordem", command=radio_buttons)
+ordem_radio = ttk.Radiobutton(lf_radio, text="Ordem", variable=radio_var, value="Ordem")
 ordem_radio.place(relx=0.52, rely=0.06, width=80, height=35)
 
-empenho_radio = ttk.Radiobutton(lf_radio, text="Empenho", variable=radio_var, value="Empenho", command=radio_buttons)
+empenho_radio = ttk.Radiobutton(lf_radio, text="Empenho", variable=radio_var, value="Empenho")
 empenho_radio.place(relx=0.73, rely=0.085, width=80, height=30)
-
 
 root.mainloop()

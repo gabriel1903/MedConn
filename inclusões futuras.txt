@@ -1,7 +1,7 @@
 ✔️ Consertar a linha adicionada duplicadamente ao reinicia o programa
 ✔️ Acrecentar botão de editar
-Navegar pela Treeview pelas setas do teclado
-Implementar o indicativo da planilha com base na escolha na combobox
+✔️Navegar pela Treeview pelas setas do teclado
+✔️Implementar o indicativo da planilha com base na escolha na combobox
 Campo de adicionar observações
 ✔️ Criar botão de configuração de layout
 ✔️ testar novo layout com o código 
