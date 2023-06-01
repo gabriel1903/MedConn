@@ -12,16 +12,18 @@ from ttkbootstrap.constants import *
 from tkinter import font
 import ttkbootstrap as ttk
 from ttkbootstrap.tableview import Tableview
+from PIL import ImageTk, Image
+from tkinter import END, StringVar
 
 # new approach
-root = ttk.Window(themename="tema_principal")
+root = tk.Tk(themename="tema_principal")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
 
 # Crie um cursor para a conexão
 c = conn.cursor()
-c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao BLOB, requisicao BLOB, ordem_de_compra BLOB, empenho BLOB, emoji TEXT, observacao TEXT)')
+c.execute('CREATE TABLE IF NOT EXISTS database (id INTEGER PRIMARY KEY AUTOINCREMENT, fornecedor TEXT, medicamento TEXT, marca TEXT, quantidade INTEGER, num_ordem INTEGER, solicitacao BLOB, requisicao BLOB, ordem_de_compra BLOB, empenho BLOB, observacao TEXT)')
 
 # define a largura e altura da janela
 largura = root.winfo_screenwidth() * 0.8
@@ -35,13 +37,9 @@ label_frame = ttk.LabelFrame(root, text='Informações do Medicamento')
 label_frame.pack(side='left', anchor='nw', padx=10, pady=10)
 
 # Fazer a consulta no banco de dados
-c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao, emoji FROM database')
+c.execute('SELECT fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho, observacao FROM database')
 rows = c.fetchall()
     
-# Consulte os emojis na tabela do banco de dados
-c.execute('SELECT emoji FROM database')
-emojis = c.fetchall()
-
 # Criando as caixas de entrada de texto dentro do LabelFrame
 fornecedor_label = ttk.Label(label_frame, text='Fornecedor', font=('Bierstadt', 12))
 fornecedor_label.grid(row=0, column=0, padx=5, pady=5)
@@ -71,7 +69,7 @@ num_ordem_entry.grid(row=4, column=1, padx=5, pady=5)
 
 # define as colunas
 columns = ('fornecedor', 'medicamento', 'marca', 'quantidade', 'numero_ordem',
-           'Solicitação', 'requisicao', 'ordem_de_compra', 'empenho', 'observacao')
+           'Solicitação', 'requisicao', 'ordem_de_compra', 'empenho')
 tree = ttk.Treeview(root, columns=columns, show='headings')
 tree.pack(side='right', fill='both', expand=True, padx=(10, 80), pady=19)
 
@@ -111,13 +109,7 @@ tree.column('ordem_de_compra', width=70, minwidth=90, anchor="center")
 tree.heading('empenho', text='Empenho')
 tree.column('empenho', width=80, minwidth=95, anchor="center")
 
-tree.heading('observacao', text='Observação')
-tree.column('observacao', width=140, minwidth=140, anchor="center")
-
 contacts = []
-
-
-
 
 # configura as tags com as cores desejadas
 tree.tag_configure('linha_par', background='#ffffff')
@@ -144,46 +136,17 @@ def inserir():
     fornecedor = fornecedor_entry.get()
     medicamento = medicamento_entry.get()
     selecionado = radio_var.get()
-
+    
     if fornecedor and medicamento:
         # insere os dados na tabela
         item = tree.insert('', tk.END, values=(fornecedor, medicamento, marca, quantidade, num_ordem),
                            tags=('linha_par' if len(tree.get_children()) % 2 == 0 else 'linha_impar',))
 
-        # Atualiza as colunas na Treeview com base na seleção
-        if selecionado == "Solicitação":
-            tree.set(item, '#6', '\u2713')  # Emoji de marca de seleção
-            tree.set(item, '#7', '\u274c')  # Emoji de marca de cruz
-            tree.set(item, '#8', '\u274c')  # Emoji de marca de cruz
-            tree.set(item, '#9', '\u274c')  # Emoji de marca de cruz
-
-        elif selecionado == "Requisição":
-            tree.set(item, '#6', '✅')
-            tree.set(item, '#7', '✅')
-            tree.set(item, '#8', '❌')
-            tree.set(item, '#9', '❌')
-        elif selecionado == "Ordem":
-            tree.set(item, '#6', '✅')
-            tree.set(item, '#7', '✅')
-            tree.set(item, '#8', '✅')
-            tree.set(item, '#9', '❌')
-        elif selecionado == "Empenho":
-            tree.set(item, '#6', '✅')
-            tree.set(item, '#7', '✅')
-            tree.set(item, '#8', '✅')
-            tree.set(item, '#9', '✅')
-
         # Limpar seleção dos radiobuttons
         radio_var.set(None)
 
-        # Converter os emojis para a codificação UTF-8
-        solicitacao = '✅'.encode('utf-8')
-        requisicao = '✅'.encode('utf-8')
-        ordem_de_compra = '✅'.encode('utf-8')
-        empenho = '✅'.encode('utf-8')
-
-        c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  (fornecedor, medicamento, marca, quantidade, num_ordem, solicitacao, requisicao, ordem_de_compra, empenho))
+        c.execute("INSERT INTO database (fornecedor, medicamento, marca, quantidade, num_ordem) VALUES (?, ?, ?, ?, ?)",
+                  (fornecedor, medicamento, marca, quantidade, num_ordem))
         conn.commit()
 
         # limpar as caixas de entrada de texto
@@ -197,6 +160,7 @@ def inserir():
         inserir_button.config(bootstyle=(SUCCESS, OUTLINE))
         fornecedor_entry.config(bootstyle=(DEFAULT))
         medicamento_entry.config(bootstyle=(DEFAULT))
+        
     else:
         inserir_button.config(bootstyle=(DANGER, OUTLINE))
         if not fornecedor:
@@ -210,7 +174,7 @@ medicamento_entry.bind('<Return>', lambda event: inserir())
 marca_entry.bind('<Return>', lambda event: inserir())
 quantidade_entry.bind('<Return>', lambda event: inserir())
 num_ordem_entry.bind('<Return>', lambda event: inserir())
-    
+
 def excluir_cliente():
     # Verifica se uma linha foi selecionada na tree view
     fornecedor_selecionado = tree.item(tree.selection())['values'][0]
@@ -270,9 +234,9 @@ def salvar():
     tree.set(linha_selecionada, column=2, value=marca)
     tree.set(linha_selecionada, column=3, value=quantidade)
     tree.set(linha_selecionada, column=4, value=num_ordem)
-
-    c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?",
-              (fornecedor, medicamento, marca, quantidade, num_ordem, id))
+    
+    c = conn.cursor()
+    c.execute("UPDATE database SET fornecedor=?, medicamento=?, marca=?, quantidade=?, num_ordem=? WHERE id=?",(fornecedor, medicamento, marca, quantidade, num_ordem, id))
     conn.commit()
 
     fornecedor_entry.delete(0, tk.END)
@@ -284,24 +248,24 @@ def salvar():
     inserir_sobre_salvar()
 
 # Criar o botão "Inserir"
-inserir_button = ttk.Button(label_frame, text='Inserir', command=lambda: [inserir()], bootstyle=(SUCCESS, OUTLINE))
-inserir_button.place(relx=0.21, rely=0.80, width=250, height=35)
+inserir_button = ttk.Button(label_frame, text='Inserir', command= inserir, bootstyle=(SUCCESS, OUTLINE))
+inserir_button.place(relx=0.14, rely=0.80, width=250, height=35)
 
 editar_button = ttk.Button(label_frame, text='Editar', command=lambda: [editar(), salvar_sobre_inserir()], bootstyle=(SUCCESS, OUTLINE))
-editar_button.place(relx=0.21, rely=0.90, width=250, height=35)
+editar_button.place(relx=0.14, rely=0.90, width=250, height=35)
 
 salvar_button = ttk.Button(label_frame, text='Salvar', command=lambda: [salvar(), habilitar_botao_inserir(), inserir_sobre_salvar()], bootstyle=(SUCCESS, OUTLINE))
 salvar_button.config(command=salvar)
 
 def salvar_sobre_inserir():
-    salvar_button.place(relx=0.21, rely=0.80, width=250, height=35)
+    salvar_button.place(relx=0.14, rely=0.80, width=250, height=35)
 
 def inserir_sobre_salvar():
     salvar_button.place_forget()
 
 # cria um checkbutton fantasma, para manter o tamanho do label_frame
 fantasma_label = ttk.Label(label_frame, text='')
-fantasma_label.grid(row=50, column=0, padx=7, pady=85)
+fantasma_label.grid(row=90, column=0, padx=20, pady=85)
 
 def habilitar_botao_salvar():
     salvar_button.config(state="normal")
