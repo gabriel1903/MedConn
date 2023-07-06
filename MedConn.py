@@ -15,8 +15,9 @@ from ttkbootstrap.tableview import Tableview
 from PIL import ImageTk, Image
 from tkinter import END, StringVar
 
-# new approach
-root = tk.Tk(themename="tema_principal")
+# traditional approach
+root = tk.Tk()
+style = ttk.Style("tema_farmacia")
 
 # Crie uma conexão com o banco de dados
 conn = sqlite3.connect('database.db')
